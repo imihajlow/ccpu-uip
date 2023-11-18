@@ -69,6 +69,7 @@
 
 #include "uip-conf.h"
 
+#include <assert.h>
 /*------------------------------------------------------------------------------*/
 
 /**
@@ -210,6 +211,7 @@
 #define UIP_UDP_CONNS    10
 #endif /* UIP_CONF_UDP_CONNS */
 
+static_assert(UIP_UDP_CONNS < 255, "UIP_UDP_CONNS must fit into 8 bit");
 /**
  * The name of the function that should be called when UDP datagrams arrive.
  *
@@ -251,6 +253,7 @@
 #define UIP_CONNS UIP_CONF_MAX_CONNECTIONS
 #endif /* UIP_CONF_MAX_CONNECTIONS */
 
+static_assert(UIP_CONNS < 255, "UIP_CONNS must fit into 8 bit");
 
 /**
  * The maximum number of simultaneously listening TCP ports.
@@ -264,6 +267,8 @@
 #else /* UIP_CONF_MAX_LISTENPORTS */
 #define UIP_LISTENPORTS UIP_CONF_MAX_LISTENPORTS
 #endif /* UIP_CONF_MAX_LISTENPORTS */
+
+static_assert(UIP_LISTENPORTS < 255, "UIP_LISTENPORTS must fit into 8 bit");
 
 /**
  * Determines if support for TCP urgent data notification should be

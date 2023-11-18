@@ -1193,9 +1193,9 @@ struct uip_conn {
   u16_t rport;        /**< The local remote TCP port, in network byte
 			 order. */
   
-  u8_t rcv_nxt[4];    /**< The sequence number that we expect to
+  u32_t rcv_nxt;    /**< The sequence number that we expect to
 			 receive next. */
-  u8_t snd_nxt[4];    /**< The sequence number that was last sent by
+  u32_t snd_nxt;    /**< The sequence number that was last sent by
                          us. */
   u16_t len;          /**< Length of the data that was previously sent. */
   u16_t mss;          /**< Current maximum segment size for the
@@ -1425,16 +1425,16 @@ struct uip_tcpip_hdr {
   u8_t vtc,
     tcflow;
   u16_t flow;
-  u8_t len[2];
+  u16_t len;
   u8_t proto, ttl;
   uip_ip6addr_t srcipaddr, destipaddr;
 #else /* UIP_CONF_IPV6 */
   /* IPv4 header. */
   u8_t vhl,
-    tos,
-    len[2],
-    ipid[2],
-    ipoffset[2],
+    tos;
+  u16_t len;
+  u16_t ipid;
+  u8_t ipoffset[2],
     ttl,
     proto;
   u16_t ipchksum;
@@ -1445,13 +1445,13 @@ struct uip_tcpip_hdr {
   /* TCP header. */
   u16_t srcport,
     destport;
-  u8_t seqno[4],
-    ackno[4],
-    tcpoffset,
-    flags,
-    wnd[2];
+  u32_t seqno,
+    ackno;
+  u8_t tcpoffset,
+    flags;
+  u16_t wnd;
   u16_t tcpchksum;
-  u8_t urgp[2];
+  u16_t urgp;
   u8_t optdata[4];
 } __attribute__((packed));
 
