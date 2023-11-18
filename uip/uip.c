@@ -722,12 +722,12 @@ uip_process(u8_t flag)
                UIP_TIMEDOUT to inform the application that the
                connection has timed out. */
             uip_flags = UIP_TIMEDOUT;
-	    UIP_APPCALL();
+            UIP_APPCALL();
 
-	    /* We also send a reset packet to the remote host. */
-	    BUF->flags = TCP_RST | TCP_ACK;
-	    goto tcp_send_nodata;
-	  }
+            /* We also send a reset packet to the remote host. */
+            BUF->flags = TCP_RST | TCP_ACK;
+            goto tcp_send_nodata;
+          }
 
           /* Exponential backoff. */
           uip_connr->timer = UIP_RTO << (uip_connr->nrtx > 4?
@@ -1177,14 +1177,14 @@ uip_process(u8_t flag)
   if((BUF->flags & TCP_CTL) != TCP_SYN) {
     goto reset;
   }
-  
+
   tmp16 = BUF->destport;
   /* Next, check listening connections. */
   for(c = 0; c < UIP_LISTENPORTS; ++c) {
     if(tmp16 == uip_listenports[c])
       goto found_listen;
   }
-  
+
   /* No matching connection found, so we send a RST packet. */
   UIP_STAT(++uip_stat.tcp.synrst);
  reset:
@@ -1518,7 +1518,7 @@ uip_process(u8_t flag)
     uip_conn->tcpstateflags = UIP_CLOSED;
     goto reset;
 #endif /* UIP_ACTIVE_OPEN */
-    
+
   case UIP_ESTABLISHED:
     /* In the ESTABLISHED state, we call upon the application to feed
     data into the uip_buf. If the UIP_ACKDATA flag is set, the
@@ -1622,10 +1622,10 @@ uip_process(u8_t flag)
     appsend:
 
       if(uip_flags & UIP_ABORT) {
-	uip_slen = 0;
-	uip_connr->tcpstateflags = UIP_CLOSED;
-	BUF->flags = TCP_RST | TCP_ACK;
-	goto tcp_send_nodata;
+        uip_slen = 0;
+        uip_connr->tcpstateflags = UIP_CLOSED;
+        BUF->flags = TCP_RST | TCP_ACK;
+        goto tcp_send_nodata;
       }
 
       if(uip_flags & UIP_CLOSE) {
