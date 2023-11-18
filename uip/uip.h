@@ -55,6 +55,9 @@
 
 #include "uipopt.h"
 
+#include <assert.h>
+#include <stddef.h>
+
 /**
  * Repressentation of an IP address.
  *
@@ -1451,6 +1454,27 @@ struct uip_tcpip_hdr {
   u8_t urgp[2];
   u8_t optdata[4];
 } __attribute__((packed));
+
+static_assert(offsetof(struct uip_tcpip_hdr, tos) == 1, "tos");
+static_assert(offsetof(struct uip_tcpip_hdr, len) == 2, "len");
+static_assert(offsetof(struct uip_tcpip_hdr, ipid) == 4, "ipid");
+static_assert(offsetof(struct uip_tcpip_hdr, ipoffset) == 6, "ipoffset");
+static_assert(offsetof(struct uip_tcpip_hdr, ttl) == 8, "ttl");
+static_assert(offsetof(struct uip_tcpip_hdr, proto) == 9, "proto");
+static_assert(offsetof(struct uip_tcpip_hdr, ipchksum) == 10, "ipchksum");
+static_assert(offsetof(struct uip_tcpip_hdr, srcipaddr) == 12, "srcipaddr");
+static_assert(offsetof(struct uip_tcpip_hdr, destipaddr) == 16, "destipaddr");
+
+static_assert(offsetof(struct uip_tcpip_hdr, srcport) == 20, "srcport");
+static_assert(offsetof(struct uip_tcpip_hdr, destport) == 22, "destport");
+static_assert(offsetof(struct uip_tcpip_hdr, seqno) == 24, "seqno");
+static_assert(offsetof(struct uip_tcpip_hdr, ackno) == 28, "ackno");
+static_assert(offsetof(struct uip_tcpip_hdr, tcpoffset) == 32, "tcpoffset");
+static_assert(offsetof(struct uip_tcpip_hdr, flags) == 33, "flags");
+static_assert(offsetof(struct uip_tcpip_hdr, wnd) == 34, "wnd");
+static_assert(offsetof(struct uip_tcpip_hdr, tcpchksum) == 36, "tcpchksum");
+static_assert(offsetof(struct uip_tcpip_hdr, urgp) == 38, "urgp");
+static_assert(offsetof(struct uip_tcpip_hdr, optdata) == 40, "tcpoffset");
 
 /* The ICMP and IP headers. */
 struct uip_icmpip_hdr {
