@@ -1074,6 +1074,25 @@ struct uip_udp_conn *uip_udp_new(uip_ipaddr_t *ripaddr, u16_t rport);
 #endif /* HTONS */
 
 /**
+ * Convert 32-bit quantity from host byte order to network byte order.
+ *
+ * This macro is primarily used for converting constants from host
+ * byte order to network byte order. For converting variables to
+ * network byte order, use the htonl() function instead.
+ *
+ * \hideinitializer
+ */
+#ifndef HTONL
+#   if UIP_BYTE_ORDER == UIP_BIG_ENDIAN
+#      define HTONL(n) (n)
+#   else /* UIP_BYTE_ORDER == UIP_BIG_ENDIAN */
+#      define HTONL(n) __builtin_bswap32(n)
+#   endif /* UIP_BYTE_ORDER == UIP_BIG_ENDIAN */
+#else
+#error "HTONL already defined!"
+#endif /* HTONL */
+
+/**
  * Convert 16-bit quantity from host byte order to network byte order.
  *
  * This function is primarily used for converting variables from host
@@ -1081,10 +1100,24 @@ struct uip_udp_conn *uip_udp_new(uip_ipaddr_t *ripaddr, u16_t rport);
  * network byte order, use the HTONS() macro instead.
  */
 #ifndef htons
-u16_t htons(u16_t val);
+#define htons(n) __builtin_bswap16(n)
 #endif /* htons */
 #ifndef ntohs
 #define ntohs htons
+#endif
+
+/**
+ * Convert 32-bit quantity from host byte order to network byte order.
+ *
+ * This function is primarily used for converting variables from host
+ * byte order to network byte order. For converting constants to
+ * network byte order, use the HTONL() macro instead.
+ */
+#ifndef htonl
+#define htonl(n) __builtin_bswap32(n)
+#endif /* htonl */
+#ifndef ntohl
+#define ntohl htonl
 #endif
 
 /** @} */
@@ -1417,7 +1450,7 @@ struct uip_tcpip_hdr {
   u16_t tcpchksum;
   u8_t urgp[2];
   u8_t optdata[4];
-};
+} __attribute__((packed));
 
 /* The ICMP and IP headers. */
 struct uip_icmpip_hdr {
@@ -1453,7 +1486,7 @@ struct uip_icmpip_hdr {
   u8_t icmp6data[16];
   u8_t options[1];
 #endif /* !UIP_CONF_IPV6 */
-};
+} __attribute__((packed));
 
 
 /* The UDP and IP headers. */
@@ -1485,7 +1518,7 @@ struct uip_udpip_hdr {
     destport;
   u16_t udplen;
   u16_t udpchksum;
-};
+} __attribute__((packed));
 
 
 
@@ -1541,7 +1574,7 @@ extern uip_ipaddr_t uip_hostaddr, uip_netmask, uip_draddr;
  */
 struct uip_eth_addr {
   u8_t addr[6];
-};
+} __attribute__((packed));
 
 /**
  * Calculate the Internet checksum over a buffer.

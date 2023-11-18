@@ -124,7 +124,11 @@
  *
  * \hideinitializer
  */
+#ifdef UIP_CONF_FIXEDETHADDR
+#define UIP_FIXEDETHADDR UIP_CONF_FIXEDETHADDR
+#else
 #define UIP_FIXEDETHADDR 0
+#endif
 
 /** @} */
 /*------------------------------------------------------------------------------*/
