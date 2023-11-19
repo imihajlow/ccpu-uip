@@ -145,7 +145,8 @@ void *uip_appdata;               /* The uip_appdata pointer points to
 void *uip_sappdata;              /* The uip_appdata pointer points to
                                     the application data which is to
                                     be sent. */
-#if UIP_URGDATA > 0
+
+#if UIP_TCP && (UIP_URGDATA > 0)
 void *uip_urgdata;               /* The uip_urgdata pointer points to
                                     urgent data (out-of-band data), if
                                     present. */
@@ -163,12 +164,14 @@ u8_t uip_flags;     /* The uip_flags variable is used for
 struct uip_conn *uip_conn;   /* uip_conn always points to the current
                                 connection. */
 
+#if UIP_TCP
 struct uip_conn uip_conns[UIP_CONNS];
                              /* The uip_conns array holds all TCP
                                 connections. */
 u16_t uip_listenports[UIP_LISTENPORTS];
                              /* The uip_listenports list all currently
                                 listning ports. */
+#endif /* UIP_TCP */
 #if UIP_UDP
 struct uip_udp_conn *uip_udp_conn;
 struct uip_udp_conn uip_udp_conns[UIP_UDP_CONNS];
@@ -180,13 +183,14 @@ static u16_t ipid;           /* Ths ipid variable is an increasing
 
 void uip_setipid(u16_t id) { ipid = id; }
 
-static u32_t iss;            /* The iss variable is used for the TCP
-                                initial sequence number. */
-
 #if UIP_ACTIVE_OPEN
 static u16_t lastport;       /* Keeps track of the last port used for
                                 a new connection. */
 #endif /* UIP_ACTIVE_OPEN */
+
+#if UIP_TCP
+static u32_t iss;            /* The iss variable is used for the TCP
+                                initial sequence number. */
 
 /* Structures and definitions. */
 #define TCP_FIN 0x01
@@ -202,6 +206,7 @@ static u16_t lastport;       /* Keeps track of the last port used for
 #define TCP_OPT_MSS     2   /* Maximum segment size TCP option */
 
 #define TCP_OPT_MSS_LEN 4   /* Length of TCP MSS option. */
+#endif /* UIP_TCP */
 
 #define ICMP_ECHO_REPLY 0
 #define ICMP_ECHO       8
@@ -299,11 +304,13 @@ uip_icmp6chksum(void)
 }
 #endif /* UIP_CONF_IPV6 */
 /*---------------------------------------------------------------------------*/
+#if UIP_TCP
 u16_t
 uip_tcpchksum(void)
 {
   return upper_layer_chksum(UIP_PROTO_TCP);
 }
+#endif /* UIP_TCP */
 /*---------------------------------------------------------------------------*/
 #if UIP_UDP_CHECKSUMS
 u16_t
@@ -317,12 +324,14 @@ uip_udpchksum(void)
 void
 uip_init(void)
 {
+#if UIP_TCP
   for(u8_t c = 0; c != UIP_LISTENPORTS; ++c) {
     uip_listenports[c] = 0;
   }
   for(u8_t c = 0; c != UIP_CONNS; ++c) {
     uip_conns[c].tcpstateflags = UIP_CLOSED;
   }
+#endif /* UIP_TCP */
 #if UIP_ACTIVE_OPEN
   lastport = 1024;
 #endif /* UIP_ACTIVE_OPEN */
@@ -341,7 +350,7 @@ uip_init(void)
 
 }
 /*---------------------------------------------------------------------------*/
-#if UIP_ACTIVE_OPEN
+#if UIP_TCP && UIP_ACTIVE_OPEN
 struct uip_conn *
 uip_connect(uip_ipaddr_t *ripaddr, u16_t rport)
 {
@@ -402,9 +411,9 @@ uip_connect(uip_ipaddr_t *ripaddr, u16_t rport)
 
   return conn;
 }
-#endif /* UIP_ACTIVE_OPEN */
+#endif /* UIP_TCP &&UIP_ACTIVE_OPEN */
 /*---------------------------------------------------------------------------*/
-#if UIP_UDP
+#if UIP_UDP && UIP_ACTIVE_OPEN
 struct uip_udp_conn *
 uip_udp_new(uip_ipaddr_t *ripaddr, u16_t rport)
 {
@@ -449,6 +458,7 @@ uip_udp_new(uip_ipaddr_t *ripaddr, u16_t rport)
   return conn;
 }
 #endif /* UIP_UDP */
+#if UIP_TCP
 /*---------------------------------------------------------------------------*/
 void
 uip_unlisten(u16_t port)
@@ -471,6 +481,7 @@ uip_listen(u16_t port)
     }
   }
 }
+#endif
 /*---------------------------------------------------------------------------*/
 /* XXX: IP fragment reassembly: not well-tested. */
 
@@ -613,6 +624,7 @@ uip_process(u8_t flag)
   }
 #endif /* UIP_UDP */
 
+#if UIP_TCP
   uip_sappdata = uip_appdata = &uip_buf[UIP_IPTCPH_LEN + UIP_LLH_LEN];
 
   /* Check if we were invoked because of a poll request for a
@@ -726,6 +738,7 @@ uip_process(u8_t flag)
     }
     goto drop;
   }
+#endif // UIP_TCP
 #if UIP_UDP
   if(flag == UIP_UDP_TIMER) {
     if(uip_udp_conn->lport != 0) {
@@ -864,11 +877,13 @@ uip_process(u8_t flag)
   }
 #endif /* UIP_CONF_IPV6 */
 
+#if UIP_TCP
   if(BUF->proto == UIP_PROTO_TCP) { /* Check for TCP packet. If so,
                                        proceed with TCP input
                                        processing. */
     goto tcp_input;
   }
+#endif // UIP_TCP
 
 #if UIP_UDP
   if(BUF->proto == UIP_PROTO_UDP) {
@@ -882,7 +897,7 @@ uip_process(u8_t flag)
                                         here. */
     UIP_STAT(++uip_stat.ip.drop);
     UIP_STAT(++uip_stat.ip.protoerr);
-    UIP_LOG("ip: neither tcp nor icmp.");
+    UIP_LOG("ip: none of supported protocolos.");
     goto drop;
   }
 
@@ -1085,6 +1100,7 @@ uip_process(u8_t flag)
   goto ip_send_nolen;
 #endif /* UIP_UDP */
 
+#if UIP_TCP
   /* TCP input processing. */
  tcp_input:
   UIP_STAT(++uip_stat.tcp.recv);
@@ -1722,6 +1738,8 @@ uip_process(u8_t flag)
   /* Calculate TCP checksum. */
   BUF->tcpchksum = 0;
   BUF->tcpchksum = ~(uip_tcpchksum());
+  UIP_STAT(++uip_stat.tcp.sent);
+#endif // UIP_TCP
 
  ip_send_nolen:
 
@@ -1741,7 +1759,6 @@ uip_process(u8_t flag)
   DEBUG_PRINTF("uip ip_send_nolen: chkecum 0x%04x\n", uip_ipchksum());
 #endif /* UIP_CONF_IPV6 */
 
-  UIP_STAT(++uip_stat.tcp.sent);
  send:
   DEBUG_PRINTF("Sending packet with length %d (%d)\n", uip_len,
                htons(BUF->len));
