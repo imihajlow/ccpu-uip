@@ -266,6 +266,7 @@ PT_THREAD(handle_dhcp(void))
     if(s.ticks < CLOCK_SECOND * 60) {
       s.ticks *= 2;
     }
+    PT_YIELD(&s.pt);
   } while(s.state != STATE_OFFER_RECEIVED);
   
   s.ticks = CLOCK_SECOND;
@@ -282,6 +283,7 @@ PT_THREAD(handle_dhcp(void))
 
     if(s.ticks <= CLOCK_SECOND * 10) {
       s.ticks += CLOCK_SECOND;
+      PT_YIELD(&s.pt);
     } else {
       PT_RESTART(&s.pt);
     }
