@@ -213,6 +213,10 @@ tcpip_chksum_sum_hi_loop:
     ld  a
     adc a, 0
     st  a
+    ldi pl, lo(sum + 1)
+    ld  a
+    adc a, 0
+    st  a
 
     ; pointer += 2
     ldi ph, hi(pointer)
